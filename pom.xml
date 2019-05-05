@@ -217,32 +217,6 @@
       </properties>
     </profile>
     <profile>
-      <id>coverage</id>
-      <properties>
-        <argLine.coverage>${jacoco.argLine}</argLine.coverage>
-      </properties>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.jacoco</groupId>
-            <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.7.7.201606060606</version>
-            <executions>
-              <execution>
-                <id>jacoco-prepare-agent</id>
-                <goals>
-                  <goal>prepare-agent</goal>
-                </goals>
-                <configuration>
-                  <propertyName>jacoco.argLine</propertyName>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
       <id>jdk8</id>
       <activation>
         <jdk>[1.8,)</jdk>
@@ -287,7 +261,7 @@
       -XX:+HeapDumpOnOutOfMemoryError
     </argLine.common>
     <!-- Default to ALPN. See forcenpn profile to force NPN -->
-    <argLine.alpnAgent>-javaagent:${jetty.alpnAgent.path}=${jetty.alpnAgent.option}</argLine.alpnAgent>
+<!--    <argLine.alpnAgent>-javaagent:${jetty.alpnAgent.path}=${jetty.alpnAgent.option}</argLine.alpnAgent>-->
     <argLine.leak>-D_</argLine.leak> <!-- Overridden when 'leak' profile is active -->
     <argLine.noUnsafe>-D_</argLine.noUnsafe> <!-- Overridden when 'noUnsafe' profile is active -->
     <argLine.coverage>-D_</argLine.coverage> <!-- Overridden when 'coverage' profile is active -->
@@ -299,12 +273,12 @@
     <os.detection.classifierWithLikes>fedora</os.detection.classifierWithLikes>
     <tcnative.artifactId>netty-tcnative</tcnative.artifactId>
     <tcnative.version>2.0.25.Final</tcnative.version>
-    <tcnative.classifier>${os.detected.classifier}</tcnative.classifier>
+<!--    <tcnative.classifier>${os.detected.classifier}</tcnative.classifier>-->
     <conscrypt.groupId>org.conscrypt</conscrypt.groupId>
     <conscrypt.artifactId>conscrypt-openjdk-uber</conscrypt.artifactId>
     <conscrypt.version>1.3.0</conscrypt.version>
     <conscrypt.classifier />
-    <jni.classifier>${os.detected.name}-${os.detected.arch}</jni.classifier>
+<!--    <jni.classifier>${os.detected.name}-${os.detected.arch}</jni.classifier>-->
     <logging.config>${project.basedir}/../common/src/test/resources/logback-test.xml</logging.config>
     <logging.logLevel>debug</logging.logLevel>
     <log4j2.version>2.6.2</log4j2.version>
@@ -425,7 +399,7 @@
         <groupId>${project.groupId}</groupId>
         <artifactId>${tcnative.artifactId}</artifactId>
         <version>${tcnative.version}</version>
-        <classifier>${tcnative.classifier}</classifier>
+<!--        <classifier>${tcnative.classifier}</classifier>-->
         <scope>compile</scope>
         <optional>true</optional>
       </dependency>
@@ -966,34 +940,7 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <includes>
-            <include>**/*Test*.java</include>
-            <include>**/*Benchmark*.java</include>
-          </includes>
-          <excludes>
-            <exclude>**/Abstract*</exclude>
-            <exclude>**/*TestUtil*</exclude>
-          </excludes>
-          <runOrder>random</runOrder>
-          <systemPropertyVariables>
-            <logback.configurationFile>${logging.config}</logback.configurationFile>
-            <logLevel>${logging.logLevel}</logLevel>
-          </systemPropertyVariables>
-          <argLine>${argLine.common} ${argLine.printGC} ${argLine.alpnAgent} ${argLine.leak} ${argLine.coverage} ${argLine.noUnsafe} ${argLine.java9} ${argLine.javaProperties}</argLine>
-          <properties>
-            <property>
-              <name>listener</name>
-              <value>io.netty.build.junit.TimedOutTestsListener</value>
-            </property>
-          </properties>
-          <jvm>${testJvm}</jvm>
-           <!-- Ensure the whole stacktrace is preserved when an exception is thrown. See https://issues.apache.org/jira/browse/SUREFIRE-1457 --> 
-          <trimStackTrace>false</trimStackTrace>
-        </configuration>
-      </plugin>
+
       <!-- always produce osgi bundles -->
       <plugin>
         <groupId>org.apache.felix</groupId>
@@ -1037,47 +984,6 @@
         </executions>
       </plugin>
 
-      <plugin>
-        <artifactId>maven-source-plugin</artifactId>
-        <version>3.0.1</version>
-        <!-- Eclipse-related OSGi manifests
-             See https://github.com/netty/netty/issues/3886
-             More information: http://rajakannappan.blogspot.ie/2010/03/automating-eclipse-source-bundle.html -->
-        <configuration>
-          <archive>
-            <manifestEntries>
-              <Bundle-ManifestVersion>2</Bundle-ManifestVersion>
-              <Bundle-Name>${project.name}</Bundle-Name>
-              <Bundle-SymbolicName>${project.groupId}.${project.artifactId}.source</Bundle-SymbolicName>
-              <Bundle-Vendor>${project.organization.name}</Bundle-Vendor>
-              <Bundle-Version>${parsedVersion.osgiVersion}</Bundle-Version>
-              <Eclipse-SourceBundle>${project.groupId}.${project.artifactId};version="${parsedVersion.osgiVersion}";roots:="."</Eclipse-SourceBundle>
-            </manifestEntries>
-          </archive>
-        </configuration>
-
-        <executions>
-          <!--
-            ~ This workaround prevents Maven from executing the 'generate-sources' phase twice.
-            ~ See http://jira.codehaus.org/browse/MSOURCES-13
-            ~ and http://blog.peterlynch.ca/2010/05/maven-how-to-prevent-generate-sources.html
-            -->
-          <execution>
-            <id>attach-sources</id>
-            <phase>invalid</phase>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>attach-sources-no-fork</id>
-            <phase>package</phase>
-            <goals>
-              <goal>jar-no-fork</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.10.4</version>
@@ -1124,104 +1030,6 @@
         </dependencies>
       </plugin>
 
-      <!-- Ensure to put maven-antrun-plugin at the end of the plugin list
-           so that they are run lastly in the same phase. -->
-      <plugin>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <executions>
-          <!-- Generate the version properties for all artifacts. -->
-          <execution>
-            <id>write-version-properties</id>
-            <phase>initialize</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <target>
-                <taskdef resource="net/sf/antcontrib/antlib.xml" />
-
-                <!-- Get the information about the latest commit -->
-                <exec executable="git" outputproperty="gitOutput.lastCommit" resultproperty="gitExitCode.lastCommit" failonerror="false" failifexecutionfails="false">
-                  <arg value="log" />
-                  <arg value="-1" />
-                  <arg value="--format=format:%h %H %cd" />
-                  <arg value="--date=iso" />
-                </exec>
-                <propertyregex property="shortCommitHash" input="${gitOutput.lastCommit}" regexp="^([0-9a-f]+) .*$" select="\1" casesensitive="true" defaultValue="0" />
-                <propertyregex property="longCommitHash" input="${gitOutput.lastCommit}" regexp="^[0-9a-f]+ ([0-9a-f]{40}) .*$" select="\1" casesensitive="true" defaultValue="0000000000000000000000000000000000000000" />
-                <propertyregex property="commitDate" input="${gitOutput.lastCommit}" regexp="^[0-9a-f]+ [0-9a-f]{40} (.*)$" select="\1" casesensitive="true" defaultValue="1970-01-01 00:00:00 +0000" />
-
-                <!-- Get the information abount whether the repository is clean or dirty -->
-                <exec executable="git" outputproperty="gitOutput.repoStatus" resultproperty="gitExitCode.repoStatus" failonerror="false" failifexecutionfails="false">
-                  <arg value="status" />
-                  <arg value="--porcelain" />
-                </exec>
-                <if>
-                  <equals arg2="0" arg1="${gitExitCode.repoStatus}" />
-                  <then>
-                    <if>
-                      <equals arg2="" arg1="${gitOutput.repoStatus}" />
-                      <then>
-                        <property name="repoStatus" value="clean" />
-                      </then>
-                      <else>
-                        <property name="repoStatus" value="dirty" />
-                      </else>
-                    </if>
-                  </then>
-                  <else>
-                    <property name="repoStatus" value="unknown" />
-                  </else>
-                </if>
-
-                <!-- Print the obtained commit information. -->
-                <echo>Current commit: ${shortCommitHash} on ${commitDate}</echo>
-
-                <!-- Generate the .properties file. -->
-                <!--
-                <property name="metaInfDir" value="${project.basedir}/src/main/resources/META-INF" />
-                -->
-                <property name="metaInfDir" value="${project.build.outputDirectory}/META-INF" />
-                <property name="versionPropFile" value="${metaInfDir}/${project.groupId}.versions.properties" />
-                <mkdir dir="${metaInfDir}" />
-                <delete file="${versionPropFile}" quiet="true" />
-
-                <propertyfile file="${versionPropFile}" comment="Generated by netty-parent/pom.xml">
-                  <entry key="${project.artifactId}.version" value="${project.version}" />
-                  <entry key="${project.artifactId}.buildDate" type="date" value="now" pattern="yyyy-MM-dd HH:mm:ss Z" />
-                  <entry key="${project.artifactId}.commitDate" value="${commitDate}" />
-                  <entry key="${project.artifactId}.shortCommitHash" value="${shortCommitHash}" />
-                  <entry key="${project.artifactId}.longCommitHash" value="${longCommitHash}" />
-                  <entry key="${project.artifactId}.repoStatus" value="${repoStatus}" />
-                </propertyfile>
-              </target>
-            </configuration>
-          </execution>
-        </executions>
-        <dependencies>
-          <dependency>
-            <groupId>org.apache.ant</groupId>
-            <artifactId>ant</artifactId>
-            <version>1.9.7</version>
-          </dependency>
-          <dependency>
-            <groupId>org.apache.ant</groupId>
-            <artifactId>ant-launcher</artifactId>
-            <version>1.9.7</version>
-          </dependency>
-          <dependency>
-            <groupId>ant-contrib</groupId>
-            <artifactId>ant-contrib</artifactId>
-            <version>1.0b3</version>
-            <exclusions>
-              <exclusion>
-                <groupId>ant</groupId>
-                <artifactId>ant</artifactId>
-              </exclusion>
-            </exclusions>
-          </dependency>
-        </dependencies>
-      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-remote-resources-plugin</artifactId>
@@ -1271,7 +1079,7 @@
                     <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                   </manifest>
                   <manifestEntries>
-                    <Automatic-Module-Name>${javaModuleName}</Automatic-Module-Name>
+<!--                    <Automatic-Module-Name>${javaModuleName}</Automatic-Module-Name>-->
                   </manifestEntries>
                   <index>true</index>
                   <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
